@@ -19,7 +19,7 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
-  task?: Task;
+  task?: any;  // Temporary - use proper Task type later
   onSuccess?: () => void;
 }
 

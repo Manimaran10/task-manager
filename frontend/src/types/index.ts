@@ -71,5 +71,9 @@ export interface DashboardStats {
   assignedTasks: number;
   createdTasks: number;
   overdueTasks: number;
+  totalTasks: number;
+  inProgressTasks: number;
+  completedTasks: number;
+  completionRate: number;
   recentTasks: Task[];
 }

@@ -11,23 +11,65 @@ import {
 import { useDashboard } from '../hooks/useTasks'; // Add this import
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import TaskList from '../components/tasks/TaskList'; // Add this import
+import TaskList from '../components/tasks/TaskList';
+import SimpleTaskList from '../components/tasks/SimpleTaskList';
 import TaskForm from '../components/tasks/TaskForm'; // Add this import
 import Modal from '../components/ui/Modal'; // Add this import
 
 const Dashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Add state for modal
+
+  
   
   // Use the real API hook - it will return data, isLoading, error
   const { data: dashboardData, isLoading: isLoadingDashboard, error: dashboardError } = useDashboard()
-  // Mock data for now - we'll replace with real API calls later
+  
+  console.log('Type of dashboardData:', typeof dashboardData);
+  console.log('dashboardData value:', dashboardData);
+  console.log('dashboardData keys:', dashboardData ? Object.keys(dashboardData) : 'No data');
   const stats = [
-    { label: 'Total Tasks', value: '42', icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' },
-    { label: 'Assigned to Me', value: '12', icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    { label: 'Created by Me', value: '8', icon: Calendar, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-    { label: 'Overdue', value: '3', icon: AlertTriangle, color: 'text-red-600', bgColor: 'bg-red-50' },
-    { label: 'In Progress', value: '7', icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
-    { label: 'Completion Rate', value: '75%', icon: TrendingUp, color: 'text-teal-600', bgColor: 'bg-teal-50' },
+    { 
+      label: 'Total Tasks', 
+      value: dashboardData?.totalTasks?.toString() || '0', 
+      icon: CheckCircle, 
+      color: 'text-green-600', 
+      bgColor: 'bg-green-50' 
+    },
+    { 
+      label: 'Assigned to Me', 
+      value: dashboardData?.assignedTasks?.toString() || '0', 
+      icon: Users, 
+      color: 'text-blue-600', 
+      bgColor: 'bg-blue-50' 
+    },
+    { 
+      label: 'Created by Me', 
+      value: dashboardData?.createdTasks?.toString() || '0', 
+      icon: Calendar, 
+      color: 'text-purple-600', 
+      bgColor: 'bg-purple-50' 
+    },
+    { 
+      label: 'Overdue', 
+      value: dashboardData?.overdueTasks?.toString() || '0', 
+      icon: AlertTriangle, 
+      color: 'text-red-600', 
+      bgColor: 'bg-red-50' 
+    },
+    { 
+      label: 'In Progress', 
+      value: dashboardData?.inProgressTasks?.toString() || '0',
+      icon: Clock, 
+      color: 'text-yellow-600', 
+      bgColor: 'bg-yellow-50' 
+    },
+    { 
+      label: 'Completion Rate', 
+      value: `${dashboardData?.completionRate || 0}%`,
+      icon: TrendingUp, 
+      color: 'text-teal-600', 
+      bgColor: 'bg-teal-50' 
+    },
   ];
 
   const recentTasks = [
@@ -123,9 +165,30 @@ const Dashboard: React.FC = () => {
             <CardHeader>
               <h2 className="text-lg font-semibold text-gray-900">Recent Tasks</h2>
             </CardHeader>
+            {/* <CardContent>
+              <SimpleTaskList /> 
+            </CardContent> */}
             <CardContent>
-              <TaskList /> 
-            </CardContent>
+  {dashboardData?.recentTasks && dashboardData.recentTasks.length > 0 ? (
+    <div className="space-y-3">
+      {dashboardData.recentTasks.map((task) => (
+        <div key={task._id} className="flex items-center justify-between p-3 border rounded-lg">
+          <div>
+            <p className="font-medium">{task.title}</p>
+            <p className="text-sm text-gray-500">
+              Due: {new Date(task.dueDate).toLocaleDateString()}
+            </p>
+          </div>
+          <span className={`px-2 py-1 text-xs rounded-full ${priorityColors[task.priority]}`}>
+            {task.priority}
+          </span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-gray-500 text-center py-4">No recent tasks</p>
+  )}
+</CardContent>
           </Card>
         </div>
 
@@ -149,6 +212,12 @@ const Dashboard: React.FC = () => {
                 <AlertTriangle className="h-4 w-4 mr-2" />
                 Report Issue
               </Button>
+              <Button 
+        variant="primary"
+        onClick={() => setIsCreateModalOpen(true)}
+        >
+        <Plus className="h-4 w-4 mr-2" /> New Task
+        </Button>
             </CardContent>
           </Card>
 
@@ -161,17 +230,10 @@ const Dashboard: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-red-800">Design Review</p>
-                    <p className="text-sm text-red-600">Today, 3:00 PM</p>
+                    <p className="font-medium text-red-800">No urgent deadlines</p>
+                    <p className="text-sm text-red-600">All tasks are on track</p>
                   </div>
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-blue-800">Team Sync</p>
-                    <p className="text-sm text-blue-600">Tomorrow, 10:00 AM</p>
-                  </div>
-                  <Users className="h-5 w-5 text-blue-600" />
+                  <CheckCircle className="h-5 w-5 text-red-600" />
                 </div>
               </div>
             </CardContent>

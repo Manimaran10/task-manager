@@ -14,6 +14,9 @@ export const useTasks = (params?: {
   return useQuery({
     queryKey: ['tasks', params],
     queryFn: () => tasksApi.getTasks(params),
+    retry: 1,
+    retryOnMount: false,
+    select: (response) => response.data,
   });
 };
 
@@ -32,6 +35,7 @@ export const useCreateTask = () => {
     mutationFn: tasksApi.createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Task created successfully!');
     },
     onError: (error: any) => {
@@ -75,6 +79,8 @@ export const useDeleteTask = () => {
 export const useDashboard = () => {
   return useQuery({
     queryKey: ['dashboard'],
-    queryFn: tasksApi.getDashboard,
+    queryFn:()=> tasksApi.getDashboard(),
+    retry: 1,
+    select: (response) => response.data
   });
 };

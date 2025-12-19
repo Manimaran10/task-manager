@@ -168,7 +168,7 @@ export class TaskService {
     });
 
     return {
-      stats,
+      ...stats,
       recentTasks: recentTasks.tasks
     };
   }

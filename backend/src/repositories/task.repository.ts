@@ -109,29 +109,99 @@ export class TaskRepository extends BaseRepository<ITask> {
       .populate('assignedToId', 'name email');
   }
 
+  // async getDashboardStats(userId: string) {
+  //   const assignedTasks = await this.count({
+  //     assignedToId: new Types.ObjectId(userId),
+  //     status: { $ne: TaskStatus.COMPLETED }
+  //   });
+
+  //   const createdTasks = await this.count({
+  //     creatorId: new Types.ObjectId(userId),
+  //     status: { $ne: TaskStatus.COMPLETED }
+  //   });
+
+  //   const overdueTasks = await this.count({
+  //     assignedToId: new Types.ObjectId(userId),
+  //     dueDate: { $lt: new Date() },
+  //     status: { $ne: TaskStatus.COMPLETED }
+  //   });
+
+  //   return {
+  //     assignedTasks,
+  //     createdTasks,
+  //     overdueTasks
+  //   };
+  // }
   async getDashboardStats(userId: string) {
-    const assignedTasks = await this.count({
-      assignedToId: new Types.ObjectId(userId),
+  const userIdObj = new Types.ObjectId(userId);
+  
+  // Get all counts in parallel for efficiency
+  const [
+    assignedTasks,
+    createdTasks,
+    overdueTasks,
+    totalTasks,
+    inProgressTasks,
+    completedTasks
+  ] = await Promise.all([
+    // Assigned tasks (excluding completed)
+    this.count({
+      assignedToId: userIdObj,
       status: { $ne: TaskStatus.COMPLETED }
-    });
-
-    const createdTasks = await this.count({
-      creatorId: new Types.ObjectId(userId),
+    }),
+    
+    // Created tasks (excluding completed)
+    this.count({
+      creatorId: userIdObj,
       status: { $ne: TaskStatus.COMPLETED }
-    });
-
-    const overdueTasks = await this.count({
-      assignedToId: new Types.ObjectId(userId),
+    }),
+    
+    // Overdue tasks
+    this.count({
+      assignedToId: userIdObj,
       dueDate: { $lt: new Date() },
       status: { $ne: TaskStatus.COMPLETED }
-    });
+    }),
+    
+    // Total tasks user is involved in
+    this.count({
+      $or: [
+        { assignedToId: userIdObj },
+        { creatorId: userIdObj }
+      ]
+    }),
+    
+    // In progress tasks
+    this.count({
+      assignedToId: userIdObj,
+      status: TaskStatus.IN_PROGRESS
+    }),
+    
+    // Completed tasks
+    this.count({
+      $or: [
+        { assignedToId: userIdObj },
+        { creatorId: userIdObj }
+      ],
+      status: TaskStatus.COMPLETED
+    })
+  ]);
 
-    return {
-      assignedTasks,
-      createdTasks,
-      overdueTasks
-    };
-  }
+  // Calculate completion rate
+  const completionRate = totalTasks > 0 
+    ? Math.round((completedTasks / totalTasks) * 100) 
+    : 0;
+
+  return {
+    assignedTasks,
+    createdTasks,
+    overdueTasks,
+    totalTasks,
+    inProgressTasks,
+    completedTasks,
+    completionRate
+  };
+}
 }
 
 export default new TaskRepository();
