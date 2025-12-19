@@ -6,6 +6,7 @@ import { TaskPriority, TaskStatus } from '../validations/task.validation';
 import { CreateTaskDto, UpdateTaskDto, TaskQueryDto } from '../validations/task.validation';
 import { NotFoundError, ForbiddenError } from '../utils/errors';
 import { NotificationType } from '../models/Notification';
+import { getIO } from '../socket';
 
 export class TaskService {
   async createTask(data: CreateTaskDto, creatorId: string) {
@@ -35,10 +36,20 @@ export class TaskService {
       taskId: task._id
     });
 
-    // Emit real-time update - import dynamically to avoid circular dependency
-    const { getIO } = await import('../socket');
+    const taskWithDetails = await taskRepository.getTaskWithDetails(task._id.toString());
+    // const { getIO } = await import('../socket');
     const io = getIO();
     io.emit('task:created', task);
+    // Notify assigned user
+     io.to(`user:${data.assignedToId}`).emit('task:assigned', {
+    task: taskWithDetails,
+    assignedBy: creator?.name,
+    timestamp: new Date(),
+  });
+
+    io.emit('task:created', taskWithDetails);
+    
+    // return taskWithDetails;
 
     return await taskRepository.getTaskWithDetails(task._id.toString());
   }
@@ -129,9 +140,18 @@ export class TaskService {
     const taskWithDetails = await taskRepository.getTaskWithDetails(taskId);
     
     // Import dynamically to avoid circular dependency
-    const { getIO } = await import('../socket');
+    // const { getIO } = await import('../socket');
     const io = getIO();
     io.emit('task:updated', taskWithDetails);
+      // Notify new assignee if changed
+    if (newAssigneeId) {
+    const updater = await userRepository.findById(userId);
+    io.to(`user:${newAssigneeId}`).emit('task:assigned', {
+      task: taskWithDetails,
+      assignedBy: updater?.name,
+      timestamp: new Date(),
+    });
+  }
 
     return taskWithDetails;
   }
