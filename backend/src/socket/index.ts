@@ -110,4 +110,5 @@ class SocketService {
 }
 
 export const socketService = new SocketService();
-export const io = socketService.getIO();
+// Don't export io directly - export a function to get it
+export const getIO = () => socketService.getIO();

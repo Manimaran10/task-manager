@@ -1,7 +1,11 @@
-import { Model, Document, FilterQuery, UpdateQuery, QueryOptions } from 'mongoose';
+import { Model, Document, QueryOptions } from 'mongoose';
+
+// Type aliases for Mongoose types
+export type FilterQuery<T> = any;
+export type UpdateQuery<T> = any;
 
 export class BaseRepository<T extends Document> {
-  constructor(private model: Model<T>) {}
+  constructor(protected model: Model<T>) {} // Changed from private to protected
 
   async create(data: Partial<T>): Promise<T> {
     const document = new this.model(data);

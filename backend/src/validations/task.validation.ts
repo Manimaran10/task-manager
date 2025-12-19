@@ -1,5 +1,19 @@
 import { z } from 'zod';
-import { TaskPriority, TaskStatus } from '../models/Task';
+
+// Define enums here instead of importing (to avoid circular dependency)
+export enum TaskPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent'
+}
+
+export enum TaskStatus {
+  TODO = 'todo',
+  IN_PROGRESS = 'in_progress',
+  REVIEW = 'review',
+  COMPLETED = 'completed'
+}
 
 export const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title cannot exceed 100 characters'),
@@ -23,8 +37,8 @@ export const taskQuerySchema = z.object({
   priority: z.nativeEnum(TaskPriority).optional(),
   sortBy: z.enum(['dueDate', 'createdAt', 'priority']).optional().default('dueDate'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
-  page: z.string().optional().transform(val => parseInt(val, 10)).refine(val => val > 0, 'Page must be positive'),
-  limit: z.string().optional().transform(val => parseInt(val, 10)).refine(val => val > 0 && val <= 100, 'Limit must be between 1 and 100')
+  page: z.string().optional().transform(val => val ? parseInt(val, 10) : 1).refine(val => val > 0, 'Page must be positive'),
+  limit: z.string().optional().transform(val => val ? parseInt(val, 10) : 20).refine(val => val > 0 && val <= 100, 'Limit must be between 1 and 100')
 });
 
 export type CreateTaskDto = z.infer<typeof createTaskSchema>;

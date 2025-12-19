@@ -2,10 +2,10 @@ import taskRepository from '../repositories/task.repository';
 import notificationRepository from '../repositories/notification.repository';
 import userRepository from '../repositories/user.repository';
 import { Types } from 'mongoose';
-import { TaskPriority, TaskStatus } from '../models/Tasks';
+import { TaskPriority, TaskStatus } from '../validations/task.validation';
 import { CreateTaskDto, UpdateTaskDto, TaskQueryDto } from '../validations/task.validation';
 import { NotFoundError, ForbiddenError } from '../utils/errors';
-import { io } from '../socket';
+import { NotificationType } from '../models/Notification';
 
 export class TaskService {
   async createTask(data: CreateTaskDto, creatorId: string) {
@@ -30,12 +30,14 @@ export class TaskService {
     const creator = await userRepository.findById(creatorId);
     await notificationRepository.createNotification({
       userId: new Types.ObjectId(data.assignedToId),
-      type: 'task_assigned',
+      type: NotificationType.TASK_ASSIGNED,
       message: `${creator?.name} assigned a new task to you: "${data.title}"`,
       taskId: task._id
     });
 
-    // Emit real-time update
+    // Emit real-time update - import dynamically to avoid circular dependency
+    const { getIO } = await import('../socket');
+    const io = getIO();
     io.emit('task:created', task);
 
     return await taskRepository.getTaskWithDetails(task._id.toString());
@@ -117,7 +119,7 @@ export class TaskService {
       const updater = await userRepository.findById(userId);
       await notificationRepository.createNotification({
         userId: new Types.ObjectId(newAssigneeId),
-        type: 'task_assigned',
+        type: NotificationType.TASK_ASSIGNED,
         message: `${updater?.name} assigned a task to you: "${task.title}"`,
         taskId: task._id
       });
@@ -125,6 +127,10 @@ export class TaskService {
 
     // Emit real-time update
     const taskWithDetails = await taskRepository.getTaskWithDetails(taskId);
+    
+    // Import dynamically to avoid circular dependency
+    const { getIO } = await import('../socket');
+    const io = getIO();
     io.emit('task:updated', taskWithDetails);
 
     return taskWithDetails;
@@ -145,6 +151,8 @@ export class TaskService {
     await taskRepository.delete(taskId);
     
     // Emit real-time update
+    const { getIO } = await import('../socket');
+    const io = getIO();
     io.emit('task:deleted', { taskId });
 
     return { message: 'Task deleted successfully' };

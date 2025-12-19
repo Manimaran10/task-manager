@@ -1,18 +1,7 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
-export enum TaskPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent'
-}
-
-export enum TaskStatus {
-  TODO = 'todo',
-  IN_PROGRESS = 'in_progress',
-  REVIEW = 'review',
-  COMPLETED = 'completed'
-}
+// Import from validation instead of defining here
+import { TaskPriority, TaskStatus } from '../validations/task.validation';
 
 export interface ITask extends Document {
   title: string;
@@ -24,9 +13,10 @@ export interface ITask extends Document {
   assignedToId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  isOverdue: boolean;
 }
 
-const TaskSchema: Schema = new Schema({
+const TaskSchema: Schema<ITask> = new Schema<ITask>({
   title: {
     type: String,
     required: [true, 'Title is required'],
@@ -75,7 +65,7 @@ TaskSchema.index({ dueDate: 1 });
 TaskSchema.index({ priority: 1 });
 
 // Virtual for checking if task is overdue
-TaskSchema.virtual('isOverdue').get(function() {
+TaskSchema.virtual('isOverdue').get(function(this: ITask) {
   return this.dueDate < new Date() && this.status !== TaskStatus.COMPLETED;
 });
 

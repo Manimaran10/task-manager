@@ -1,4 +1,5 @@
-import Task, { ITask, TaskPriority, TaskStatus } from '../models/Tasks';
+import Task, { ITask } from '../models/Tasks';
+import { TaskPriority, TaskStatus } from '../validations/task.validation';
 import { BaseRepository } from './base.repository';
 import { Types } from 'mongoose';
 
