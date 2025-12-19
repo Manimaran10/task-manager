@@ -4,20 +4,19 @@ import { ValidationError } from '../utils/errors';
 
 export const validate = (schema: ZodObject<ZodRawShape>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
+    console.log('Validation middleware called');
+    console.log('Request body:', req.body);
+    console.log('Request body type:', typeof req.body);
+    console.log('Request body keys:', Object.keys(req.body));
     try {
-      await schema.parseAsync({
-        body: req.body,
-        query: req.query,
-        params: req.params
-      });
+      await schema.parseAsync(req.body);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        // Type assertion to access errors property
-        const zodError = error as any;
-        const errors = zodError.errors.map((err: any) => ({
-          field: err.path.join('.'),
-          message: err.message
+        // Zod 3.x+ uses `.issues` instead of `.errors`
+        const errors = error.issues.map((issue: any) => ({
+          field: issue.path.join('.'),
+          message: issue.message
         }));
         next(new ValidationError(JSON.stringify(errors)));
       } else {

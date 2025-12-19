@@ -1,16 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Calendar, 
   Users, 
   AlertTriangle, 
   CheckCircle,
   TrendingUp,
-  Clock
+  Clock,
+  Plus
 } from 'lucide-react';
+import { useDashboard } from '../hooks/useTasks'; // Add this import
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import TaskList from '../components/tasks/TaskList'; // Add this import
+import TaskForm from '../components/tasks/TaskForm'; // Add this import
+import Modal from '../components/ui/Modal'; // Add this import
 
 const Dashboard: React.FC = () => {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Add state for modal
+  
+  // Use the real API hook - it will return data, isLoading, error
+  const { data: dashboardData, isLoading: isLoadingDashboard, error: dashboardError } = useDashboard()
   // Mock data for now - we'll replace with real API calls later
   const stats = [
     { label: 'Total Tasks', value: '42', icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50' },
@@ -41,6 +50,34 @@ const Dashboard: React.FC = () => {
     review: 'bg-purple-100 text-purple-800',
     completed: 'bg-green-100 text-green-800',
   };
+  // Loading state
+  if (isLoadingDashboard) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-64 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} padding="sm">
+              <CardContent className="flex items-center">
+                <div className="h-12 w-12 bg-gray-200 rounded-lg animate-pulse"></div>
+                <div className="ml-4">
+                  <div className="h-7 w-12 bg-gray-200 rounded animate-pulse mb-1"></div>
+                  <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -50,8 +87,11 @@ const Dashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">Welcome back! Here's what's happening with your tasks.</p>
         </div>
-        <Button variant="primary">
-          + New Task
+        <Button 
+        variant="primary"
+        onClick={() => setIsCreateModalOpen(true)}
+        >
+        <Plus className="h-4 w-4 mr-2" /> New Task
         </Button>
       </div>
 
@@ -84,45 +124,7 @@ const Dashboard: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900">Recent Tasks</h2>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <CheckCircle className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">{task.title}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className={`px-2 py-1 text-xs rounded-full ${priorityColors[task.priority]}`}>
-                            {task.priority}
-                          </span>
-                          <span className={`px-2 py-1 text-xs rounded-full ${statusColors[task.status]}`}>
-                            {task.status.replace('_', ' ')}
-                          </span>
-                          <span className="text-xs text-gray-500">Due: {task.dueDate}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-gray-600">
-                        <Calendar className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600">
-                        <Users className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 text-center">
-                <Button variant="outline" size="sm">
-                  View All Tasks
-                </Button>
-              </div>
+              <TaskList /> 
             </CardContent>
           </Card>
         </div>
@@ -176,6 +178,14 @@ const Dashboard: React.FC = () => {
           </Card>
         </div>
       </div>
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create New Task"
+        size="lg"
+      >
+        <TaskForm onSuccess={() => setIsCreateModalOpen(false)} />
+      </Modal>
     </div>
   );
 };

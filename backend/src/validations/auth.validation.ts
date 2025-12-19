@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// REMOVE the body wrapper - validate the data directly
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name cannot exceed 50 characters'),
   email: z.string().email('Invalid email address'),

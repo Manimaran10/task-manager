@@ -99,8 +99,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (name: string, email: string, password: string) => {
+    console.log('Register data being sent:', { name, email, password });
     try {
       const response = await authApi.register({ name, email, password });
+      console.log('Register API response:', response)
       if (response.data && response.data.user && response.data.token) {
         const { token, user } = response.data;
         
