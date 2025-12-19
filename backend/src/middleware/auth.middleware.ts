@@ -19,3 +19,5 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     next(new UnauthorizedError('Invalid or expired token'));
   }
 };
+
+export default authMiddleware;
