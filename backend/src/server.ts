@@ -27,8 +27,30 @@ socketService.initialize(server);
 
 // Middleware
 app.use(helmet());
+// app.use(cors({
+//   origin: FRONTEND_URL,
+//   credentials: true
+// }));
+// CORS configuration for multiple origins
+const getCorsOrigins = () => {
+  const frontendUrl = process.env.FRONTEND_URL;
+  
+  if (!frontendUrl) {
+    return ['http://localhost:5173'];
+  }
+  
+  if (frontendUrl.includes(',')) {
+    return frontendUrl
+      .split(',')
+      .map(url => url.trim())
+      .filter(url => url.length > 0);
+  }
+  
+  return [frontendUrl.trim()];
+};
+
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: getCorsOrigins(),
   credentials: true
 }));
 app.use(morgan('dev'));

@@ -12,68 +12,91 @@ class SocketService {
   private io: SocketIOServer | null = null;
   private users: Map<string, SocketUser> = new Map();
 
-  initialize(server: HttpServer) {
-    this.io = new SocketIOServer(server, {
-      cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-        credentials: true
+initialize(server: HttpServer) {
+  // Handle multiple origins from environment variable
+  const getSocketOrigins = () => {
+    const frontendUrl = process.env.FRONTEND_URL;
+    
+    if (!frontendUrl) {
+      return ['http://localhost:5173'];
+    }
+    
+    // Split by comma if multiple origins provided
+    if (frontendUrl.includes(',')) {
+      return frontendUrl
+        .split(',')
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+    }
+    
+    // Single origin
+    return [frontendUrl.trim()];
+  };
+
+  this.io = new SocketIOServer(server, {
+    cors: {
+      origin: getSocketOrigins(),
+      credentials: true,
+      methods: ['GET', 'POST']
+    },
+    transports: ['websocket', 'polling'] // Added transports for better compatibility
+  });
+
+  // ✅ YOUR EXISTING CODE BELOW - NO CHANGES
+  this.io.use((socket, next) => {
+    try {
+      const token = socket.handshake.auth.token;
+      if (!token) {
+        return next(new Error('Authentication error'));
       }
+
+      const decoded = verifyToken(token);
+      (socket as any).user = decoded;
+      next();
+    } catch (error) {
+      next(new Error('Authentication error'));
+    }
+  });
+
+  this.io.on('connection', (socket) => {
+    const user = (socket as any).user;
+    
+    // Store user connection
+    this.users.set(socket.id, {
+      userId: user.userId,
+      socketId: socket.id
     });
 
-    this.io.use((socket, next) => {
-      try {
-        const token = socket.handshake.auth.token;
-        if (!token) {
-          return next(new Error('Authentication error'));
-        }
+    console.log(`User connected: ${user.userId}`);
 
-        const decoded = verifyToken(token);
-        (socket as any).user = decoded;
-        next();
-      } catch (error) {
-        next(new Error('Authentication error'));
-      }
+    // Join user to their personal room
+    socket.join(`user:${user.userId}`);
+
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      this.users.delete(socket.id);
+      console.log(`User disconnected: ${user.userId}`);
     });
 
-    this.io.on('connection', (socket) => {
-      const user = (socket as any).user;
-      
-      // Store user connection
-      this.users.set(socket.id, {
-        userId: user.userId,
-        socketId: socket.id
-      });
-
-      console.log(`User connected: ${user.userId}`);
-
-      // Join user to their personal room
-      socket.join(`user:${user.userId}`);
-
-      // Handle disconnection
-      socket.on('disconnect', () => {
-        this.users.delete(socket.id);
-        console.log(`User disconnected: ${user.userId}`);
-      });
-
-      // Handle task updates
-      socket.on('task:updated', (data) => {
-        // Broadcast to all users except sender
-        socket.broadcast.emit('task:updated', data);
-      });
-
-      // Handle task creation
-      socket.on('task:created', (data) => {
-        socket.broadcast.emit('task:created', data);
-      });
-
-      // Handle task deletion
-      socket.on('task:deleted', (data) => {
-        socket.broadcast.emit('task:deleted', data);
-      });
+    // Handle task updates
+    socket.on('task:updated', (data) => {
+      // Broadcast to all users except sender
+      socket.broadcast.emit('task:updated', data);
     });
 
-    console.log('✅ Socket.IO initialized');
-  }
+    // Handle task creation
+    socket.on('task:created', (data) => {
+      socket.broadcast.emit('task:created', data);
+    });
+
+    // Handle task deletion
+    socket.on('task:deleted', (data) => {
+      socket.broadcast.emit('task:deleted', data);
+    });
+  });
+
+  console.log('✅ Socket.IO initialized');
+}
 
   // Get io instance
   getIO(): SocketIOServer {
