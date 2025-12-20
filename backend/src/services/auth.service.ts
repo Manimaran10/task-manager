@@ -70,7 +70,7 @@ export class AuthService {
   }
 
   async searchUsers(query: string, currentUserId: string) {
-    return await userRepository.searchUsers(query, currentUserId);
+    return await userRepository.searchUsers(query);
   }
 }
 
