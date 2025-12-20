@@ -58,7 +58,8 @@ export const useUpdateTask = () => {
       tasksApi.updateTask(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['task', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['task', variables.id] }); 
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Task updated successfully!');
     },
     onError: (error: any) => {
@@ -73,7 +74,8 @@ export const useDeleteTask = () => {
   return useMutation({
     mutationFn: tasksApi.deleteTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); 
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Task deleted successfully!');
     },
     onError: (error: any) => {
