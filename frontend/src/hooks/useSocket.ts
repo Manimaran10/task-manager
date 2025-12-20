@@ -77,6 +77,15 @@ export const useTaskSocket = () => {
     // Listen for task created events
     const handleTaskCreated = (task: Task) => {
       console.log('📦 Task created via socket:', task.title);
+      updateAllTasksQueries(task, 'add');
+      // In useSocket.ts, at the start of each handler:
+console.log('🔍 [SOCKET] Raw event data:', task);
+console.log('🔍 [SOCKET] Current tasks cache:', queryClient.getQueryData(['tasks']));
+console.log('🔍 [SOCKET] Cache structure:', {
+  type: typeof queryClient.getQueryData(['tasks']),
+  isArray: Array.isArray(queryClient.getQueryData(['tasks'])),
+  keys: Object.keys(queryClient.getQueryData(['tasks']) || {})
+});
       
       // Update tasks cache optimistically
       queryClient.setQueriesData(
@@ -102,6 +111,7 @@ export const useTaskSocket = () => {
       
       // Update specific task cache
       queryClient.setQueryData(['task', task._id], task);
+      updateAllTasksQueries(task, 'update');
       
       // Update tasks list cache
       queryClient.setQueriesData(
@@ -122,7 +132,6 @@ export const useTaskSocket = () => {
       
       // Update dashboard (invalidate to get fresh stats)
       updateDashboardStats('updated', task);
-      
       toast.success(`Task updated: "${task.title}"`);
     };
 
@@ -135,6 +144,8 @@ export const useTaskSocket = () => {
       
       // Remove task from cache
       queryClient.removeQueries({ queryKey: ['task', taskId] });
+
+      updateAllTasksQueries({} as Task, 'remove', taskId);
       
       // Update tasks list
       queryClient.setQueriesData(
@@ -153,7 +164,6 @@ export const useTaskSocket = () => {
       
       // Update dashboard
       updateDashboardStats('deleted', task);
-      
       toast.success('Task deleted');
     };
 
@@ -177,6 +187,48 @@ export const useTaskSocket = () => {
     socket.on('task:assigned', handleTaskAssigned);
 
     console.log('✅ Socket listeners set up');
+
+// In useSocket.ts, replace setQueriesData with:
+const updateAllTasksQueries = (task: Task, action: 'add' | 'update' | 'remove', taskId?: string) => {
+  // Get ALL query keys that start with 'tasks'
+  const queryCache = queryClient.getQueryCache();
+  const allTaskQueries = queryCache.findAll({ queryKey: ['tasks'] });
+  
+  console.log('🔍 Found task queries:', allTaskQueries.length);
+  
+  // Update EACH query cache
+  allTaskQueries.forEach((query) => {
+    queryClient.setQueryData(query.queryKey, (old: any) => {
+      console.log('🔍 Updating query:', query.queryKey, 'with action:', action);
+      
+      if (!old) return old;
+      
+      // Handle array data (your current structure)
+      if (Array.isArray(old)) {
+        if (action === 'add') return [task, ...old];
+        if (action === 'update') return old.map((t: Task) => t._id === task._id ? { ...t, ...task } : t);
+        if (action === 'remove') return old.filter((t: Task) => t._id !== taskId);
+      }
+      
+      // Handle { data: Task[] } structure
+      if (old.data && Array.isArray(old.data)) {
+        if (action === 'add') return { ...old, data: [task, ...old.data] };
+        if (action === 'update') return {
+          ...old,
+          data: old.data.map((t: Task) => t._id === task._id ? { ...t, ...task } : t)
+        };
+        if (action === 'remove') return { 
+          ...old, 
+          data: old.data.filter((t: Task) => t._id !== taskId) 
+        };
+      }
+      
+      return old;
+    });
+  });
+};
+
+// Use this in all socket handlers instead
 
     return () => {
       console.log('🔌 Cleaning up socket listeners');

@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/AuthContext';
-import { useTaskSocket } from './hooks/useSocket'; 
+import { useTaskSocket } from './hooks/useSocket';
+import { useQueryClient } from '@tanstack/react-query';
+import tasksApi from './api/tasks'
 
 // Layouts
 import MainLayout from './layouts/MainLayout';
@@ -31,7 +33,18 @@ const queryClient = new QueryClient({
 
 function App() {
   const { user, isLoading } = useAuth();
+    const queryClient = useQueryClient();
+  // const { user } = useAuth();
   
+  useEffect(() => {
+    if (user) {
+      // Prefetch tasks to ensure cache exists
+      queryClient.prefetchQuery({
+        queryKey: ['tasks'],
+        queryFn: () => tasksApi.getTasks()
+      });
+    }
+  }, [user, queryClient]);
   // Initialize socket listeners - Add this line
   useTaskSocket();
   

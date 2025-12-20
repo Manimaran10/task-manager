@@ -56,18 +56,18 @@ class SocketService {
       });
 
       // Handle task updates
-      socket.on('task:update', (data) => {
+      socket.on('task:updated', (data) => {
         // Broadcast to all users except sender
         socket.broadcast.emit('task:updated', data);
       });
 
       // Handle task creation
-      socket.on('task:create', (data) => {
+      socket.on('task:created', (data) => {
         socket.broadcast.emit('task:created', data);
       });
 
       // Handle task deletion
-      socket.on('task:delete', (data) => {
+      socket.on('task:deleted', (data) => {
         socket.broadcast.emit('task:deleted', data);
       });
     });

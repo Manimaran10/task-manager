@@ -39,17 +39,13 @@ export class TaskService {
     const taskWithDetails = await taskRepository.getTaskWithDetails(task._id.toString());
     // const { getIO } = await import('../socket');
     const io = getIO();
-    io.emit('task:created', task);
+    io.emit('task:created', taskWithDetails);
     // Notify assigned user
-     io.to(`user:${data.assignedToId}`).emit('task:assigned', {
+    io.to(`user:${data.assignedToId}`).emit('task:assigned', {
     task: taskWithDetails,
     assignedBy: creator?.name,
     timestamp: new Date(),
   });
-
-    io.emit('task:created', taskWithDetails);
-    
-    // return taskWithDetails;
 
     return await taskRepository.getTaskWithDetails(task._id.toString());
   }
@@ -139,9 +135,6 @@ export class TaskService {
 
     // Emit real-time update
     const taskWithDetails = await taskRepository.getTaskWithDetails(taskId);
-    
-    // Import dynamically to avoid circular dependency
-    // const { getIO } = await import('../socket');
     const io = getIO();
     io.emit('task:updated', taskWithDetails);
       // Notify new assignee if changed

@@ -69,3 +69,5 @@ export const tasksApi = {
     return response.data;
   },
 };
+
+export default tasksApi;

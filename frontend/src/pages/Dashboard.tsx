@@ -162,7 +162,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Tasks */}
         <div className="lg:col-span-2">
-                  <SimpleTaskList />
+          <SimpleTaskList />
           <Card>
             <CardHeader>
               <h2 className="text-lg font-semibold text-gray-900">Recent Tasks</h2>
