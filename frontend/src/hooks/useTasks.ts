@@ -16,7 +16,13 @@ export const useTasks = (params?: {
     queryFn: () => tasksApi.getTasks(params),
     retry: 1,
     retryOnMount: false,
-    select: (response) => response.data,
+    select: (response) => {
+      if (Array.isArray(response)) return response;
+      if (response?.data?.tasks) return response.data.tasks;
+      if (response?.data) return response.data;
+      // if (response?.tasks) return response.tasks;
+      return [];
+    }
   });
 };
 

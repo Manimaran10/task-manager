@@ -58,7 +58,10 @@ export class TaskRepository extends BaseRepository<ITask> {
     // Sorting
     const sort: any = {};
     if (options.sortBy) {
-      sort[options.sortBy] = options.sortOrder === 'desc' ? -1 : 1;
+      const allowedSortFields = ['dueDate', 'createdAt', 'priority', 'title', 'updatedAt'];
+      if (allowedSortFields.includes(options.sortBy)) {
+          sort[options.sortBy] = options.sortOrder === 'desc' ? -1 : 1;
+      }
     } else {
       sort.dueDate = 1; // Default sort by due date ascending
     }
@@ -108,30 +111,6 @@ export class TaskRepository extends BaseRepository<ITask> {
       .populate('creatorId', 'name email')
       .populate('assignedToId', 'name email');
   }
-
-  // async getDashboardStats(userId: string) {
-  //   const assignedTasks = await this.count({
-  //     assignedToId: new Types.ObjectId(userId),
-  //     status: { $ne: TaskStatus.COMPLETED }
-  //   });
-
-  //   const createdTasks = await this.count({
-  //     creatorId: new Types.ObjectId(userId),
-  //     status: { $ne: TaskStatus.COMPLETED }
-  //   });
-
-  //   const overdueTasks = await this.count({
-  //     assignedToId: new Types.ObjectId(userId),
-  //     dueDate: { $lt: new Date() },
-  //     status: { $ne: TaskStatus.COMPLETED }
-  //   });
-
-  //   return {
-  //     assignedTasks,
-  //     createdTasks,
-  //     overdueTasks
-  //   };
-  // }
   async getDashboardStats(userId: string) {
   const userIdObj = new Types.ObjectId(userId);
   

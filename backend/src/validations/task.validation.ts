@@ -35,7 +35,7 @@ export const updateTaskSchema = z.object({
 export const taskQuerySchema = z.object({
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.nativeEnum(TaskPriority).optional(),
-  sortBy: z.enum(['dueDate', 'createdAt', 'priority']).optional().default('dueDate'),
+  sortBy: z.enum(['dueDate', 'createdAt', 'priority','title']).optional().default('dueDate'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
   page: z.string().optional().transform(val => val ? parseInt(val, 10) : 1).refine(val => val > 0, 'Page must be positive'),
   limit: z.string().optional().transform(val => val ? parseInt(val, 10) : 20).refine(val => val > 0 && val <= 100, 'Limit must be between 1 and 100')

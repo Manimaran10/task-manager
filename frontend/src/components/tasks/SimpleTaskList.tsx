@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle, AlertCircle, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTasks, useDeleteTask } from '../../hooks/useTasks';
 import TaskForm from './TaskForm';
+import TaskFilters from './TaskFilters';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import type { Task } from '../../types';
@@ -10,11 +11,29 @@ const SimpleTaskList: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
   const [showAllTasks, setShowAllTasks] = useState(true);
+  const [filters, setFilters] = useState({
+    status: undefined as string | undefined,
+    priority: undefined as string | undefined,
+    sortBy: 'dueDate' as string | undefined,
+    sortOrder: 'asc' as 'asc' | 'desc' | undefined,
+  });
   
-  const { data: tasksData, isLoading, error, refetch } = useTasks();
+  const { data: tasksData, isLoading, error, refetch } = useTasks(filters);
   const deleteMutation = useDeleteTask();
 
-  // 🔥 FIX: Handle loading and undefined data
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
+  };
+  
+  const handleClearFilters = () => {
+    setFilters({
+      status: undefined,
+      priority: undefined,
+      sortBy: 'dueDate',
+      sortOrder: 'asc',
+    });
+  };
+  //Handle loading and undefined data
   if (isLoading || tasksData === undefined) {
     return (
       <div className="text-center py-8">
@@ -41,7 +60,7 @@ const SimpleTaskList: React.FC = () => {
     );
   }
 
-  // 🔥 FIX: Handle array data directly
+  //Handle array data directly
   const tasks = Array.isArray(tasksData) ? tasksData : [];
 
   const handleEdit = (task: Task) => {
@@ -59,8 +78,23 @@ const SimpleTaskList: React.FC = () => {
     }
   };
 
+  const getFilterInfo = () => {
+    const parts = [];
+    if (filters.status) parts.push(`Status: ${filters.status}`);
+    if (filters.priority) parts.push(`Priority: ${filters.priority}`);
+    if (filters.sortBy !== 'dueDate') parts.push(`Sorted by: ${filters.sortBy}`);
+    if (filters.sortOrder !== 'asc') parts.push(`Order: ${filters.sortOrder}`);
+    
+    return parts.length > 0 ? ` (${parts.join(', ')})` : '';
+  };
+
   return (
     <>
+      <TaskFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
       {/* ALL TASKS SECTION */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
