@@ -26,6 +26,8 @@ const Dashboard: React.FC = () => {
   
   console.log('Type of dashboardData:', typeof dashboardData);
   console.log('dashboardData value:', dashboardData);
+  console.log('dasboarderror:', dashboardError);
+  
   console.log('dashboardData keys:', dashboardData ? Object.keys(dashboardData) : 'No data');
   const stats = [
     { 
@@ -72,25 +74,11 @@ const Dashboard: React.FC = () => {
     },
   ];
 
-  const recentTasks = [
-    { id: 1, title: 'Design System Update', priority: 'high', status: 'in_progress', dueDate: 'Today' },
-    { id: 2, title: 'API Documentation', priority: 'medium', status: 'todo', dueDate: 'Tomorrow' },
-    { id: 3, title: 'User Feedback Review', priority: 'low', status: 'completed', dueDate: 'Yesterday' },
-    { id: 4, title: 'Database Migration', priority: 'urgent', status: 'review', dueDate: 'Today' },
-  ];
-
   const priorityColors: Record<string, string> = {
     low: 'bg-gray-100 text-gray-800',
     medium: 'bg-blue-100 text-blue-800',
     high: 'bg-yellow-100 text-yellow-800',
     urgent: 'bg-red-100 text-red-800',
-  };
-
-  const statusColors: Record<string, string> = {
-    todo: 'bg-gray-100 text-gray-800',
-    in_progress: 'bg-blue-100 text-blue-800',
-    review: 'bg-purple-100 text-purple-800',
-    completed: 'bg-green-100 text-green-800',
   };
   // Loading state
   if (isLoadingDashboard) {

@@ -56,6 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const verifyToken = async (token: string) => {
+    console.log(token)
     try {
       const response = await authApi.getProfile();
       if (response.data) {

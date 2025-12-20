@@ -66,7 +66,7 @@
 // export default Tasks;
 
 import React, { useState } from 'react';
-import { Plus, Filter, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import SimpleTaskList from '../components/tasks/SimpleTaskList';
 import TaskForm from '../components/tasks/TaskForm';
 import Modal from '../components/ui/Modal';

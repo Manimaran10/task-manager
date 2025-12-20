@@ -78,15 +78,15 @@ const SimpleTaskList: React.FC = () => {
     }
   };
 
-  const getFilterInfo = () => {
-    const parts = [];
-    if (filters.status) parts.push(`Status: ${filters.status}`);
-    if (filters.priority) parts.push(`Priority: ${filters.priority}`);
-    if (filters.sortBy !== 'dueDate') parts.push(`Sorted by: ${filters.sortBy}`);
-    if (filters.sortOrder !== 'asc') parts.push(`Order: ${filters.sortOrder}`);
+  // const getFilterInfo = () => {
+  //   const parts = [];
+  //   if (filters.status) parts.push(`Status: ${filters.status}`);
+  //   if (filters.priority) parts.push(`Priority: ${filters.priority}`);
+  //   if (filters.sortBy !== 'dueDate') parts.push(`Sorted by: ${filters.sortBy}`);
+  //   if (filters.sortOrder !== 'asc') parts.push(`Order: ${filters.sortOrder}`);
     
-    return parts.length > 0 ? ` (${parts.join(', ')})` : '';
-  };
+  //   return parts.length > 0 ? ` (${parts.join(', ')})` : '';
+  // };
 
   return (
     <>

@@ -1,13 +1,12 @@
-import React,{ useState, useEffect } from 'react';
+import React,{ useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calendar, User, Flag, FileText, Search, ChevronDown} from 'lucide-react';
+import { Calendar, User, FileText, Search, ChevronDown} from 'lucide-react';
 import { useCreateTask, useUpdateTask } from '../../hooks/useTasks';
 import { useUsers } from '../../hooks/useUsers';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import type { Task } from '../../types';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),

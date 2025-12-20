@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api/tasks';
 import toast from 'react-hot-toast';
-import type { Task } from '../types';
 
 export const useTasks = (params?: {
   status?: string;
