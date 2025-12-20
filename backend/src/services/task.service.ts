@@ -89,15 +89,16 @@ export class TaskService {
   async updateTask(taskId: string, data: UpdateTaskDto, userId: string) {
     const task = await taskRepository.findById(taskId);
     
+    
     if (!task) {
       throw new NotFoundError('Task not found');
     }
-
     // Check if user can update the task
     if (
-      task.creatorId.toString() !== userId &&
-      task.assignedToId.toString() !== userId
+      task.creatorId.toString() !== userId.toString() &&
+      task.assignedToId.toString() !== userId.toString()
     ) {
+          console.log('❌ ACCESS DENIED - User is neither creator nor assignee');
       throw new ForbiddenError('Access denied');
     }
 
@@ -164,7 +165,7 @@ export class TaskService {
     }
 
     // Only creator can delete the task
-    if (task.creatorId.toString() !== userId) {
+    if (task.creatorId.toString() !== userId.toString()) {
       throw new ForbiddenError('Only the creator can delete this task');
     }
 

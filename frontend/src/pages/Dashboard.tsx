@@ -11,7 +11,7 @@ import {
 import { useDashboard } from '../hooks/useTasks'; // Add this import
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import TaskList from '../components/tasks/TaskList';
+// import TaskList from '../components/tasks/TaskList';
 import SimpleTaskList from '../components/tasks/SimpleTaskList';
 import TaskForm from '../components/tasks/TaskForm'; // Add this import
 import Modal from '../components/ui/Modal'; // Add this import
@@ -142,6 +142,7 @@ const Dashboard: React.FC = () => {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
+            
             <Card key={stat.label} padding="sm">
               <CardContent className="flex items-center">
                 <div className={`${stat.bgColor} p-3 rounded-lg`}>
@@ -161,6 +162,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Tasks */}
         <div className="lg:col-span-2">
+                  <SimpleTaskList />
           <Card>
             <CardHeader>
               <h2 className="text-lg font-semibold text-gray-900">Recent Tasks</h2>

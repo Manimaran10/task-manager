@@ -53,7 +53,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSuccess }) => {
       priority: task.priority,
       assignedToId: task.assignedToId._id,
     } : {
-      priority: 'medium',
+      priority: 'medium', 
       status: 'todo',
     },
   });
